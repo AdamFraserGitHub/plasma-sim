@@ -1,0 +1,198 @@
+<html>
+    <head>
+        <style>
+            html, body {
+                margin: 0px;
+                padding: 0px;
+                overflow: hidden;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="canvas"></canvas>
+    </body>
+
+    <script>
+        var canvas = document.getElementById('canvas');
+        var ctx = canvas.getContext('2d');
+
+        var scrWidth = canvas.width = 100;//window.innerWidth;
+        var scrHeight = canvas.height = 100;//window.innerHeight;
+
+        ctx.fillRect(0,0,scrWidth, scrHeight);
+
+        var grid = []
+
+        class Cell {
+            constructor(x,y,pressure) {
+                this.x = x;
+                this.y = y;
+                this.p = pressure;
+            }
+
+            calculateFlow() {
+                //0 - top, 1 - right, 2 - down, 3 - left 
+                this.flow = [];
+
+                var sumBorder = 0;
+                var nBorder = 0;
+                if(this.y > 0) {
+                    if(grid[this.x][this.y - 1].p > this.p) {
+                        sumBorder += grid[this.x][this.y - 1].p;
+                        this.flow.push(grid[this.x][this.y - 1].p);
+                        nBorder+=1;
+                    } else {
+                        this.flow.push(0);
+                    }
+                } else {
+                    this.flow.push(0);
+                }
+                if(this.x < scrWidth - 1) {
+                    if(grid[this.x + 1][this.y].p > this.p) {
+                        sumBorder += grid[this.x + 1][this.y].p;
+                        this.flow.push(grid[this.x + 1][this.y].p);
+                        nBorder+=1;
+                    } else {
+                        this.flow.push(0);
+                    }
+                } else {
+                    this.flow.push(0);
+                }
+                if(this.y < scrHeight - 1) {
+                    if(grid[this.x][this.y + 1].p > this.p) {
+                        sumBorder += grid[this.x][this.y + 1].p;
+                        this.flow.push(grid[this.x][this.y + 1].p);
+                        nBorder+=1;
+                    } else {
+                        this.flow.push(0);
+                    }
+                } else {
+                    this.flow.push(0);
+                }
+                if(this.x > 0) {
+                    if(grid[this.x - 1][this.y].p > this.p) {
+                        sumBorder += grid[this.x - 1][this.y].p;
+                        this.flow.push(grid[this.x - 1][this.y].p);
+                        nBorder+=1;
+                    } else {
+                        this.flow.push(0);
+                    }
+                } else {
+                    this.flow.push(0);
+                }
+
+                if(nBorder > 0) {
+                    var avg = sumBorder / nBorder;
+                    this.massFlow = this.p - (this.p - avg);
+                } else {
+                    this.massFlow = 0;
+                }
+
+                // console.log(this.massFlow);
+                
+                for(var i = 0; i < this.flow.length; i++) {
+                    if(sumBorder > 0) {
+                        this.flow[i] = (this.flow[i] / sumBorder) * this.massFlow;
+                    } else {
+                        this.flow[i] - this.massFlow / nBorder;
+                    }
+                    // if(isNaN(this.flow[i])) {
+                    //     // console.log("NAN");
+                    // }
+                }
+
+                // if(sumFlow < this.massFlow) {
+                //     console.log(this.massFlow - sumFlow);
+                //     ctx.fillStyle = 'rgb(255,0,0)';
+                //     ctx.fillRect(this.x, this.y, 1, 1);
+                // }
+            }
+
+            applyFlow() {
+                // var sumFlow = 0;
+                // for(var i = 0; i < this.flow.length; i++) {
+                //     sumFlow += this.flow[i];
+                // }
+                // // this.p -= sumFlow;
+                // this.p*=0.9;
+
+                if(this.y > 0) {
+                    grid[this.x][this.y - 1].p += this.flow[0]
+                    this.p -= this.flow[0]
+                }
+                if(this.x < scrWidth - 1) {
+                    grid[this.x + 1][this.y].p += this.flow[1]
+                    this.p -= this.flow[1];
+                } 
+                if(this.y < scrHeight - 1) {
+                    grid[this.x][this.y + 1].p += this.flow[2];
+                    this.p -= this.flow[2];
+                }
+                if(this.x > 0) {
+                    grid[this.x - 1][this.y].p += this.flow[3];
+                    this.p -= this.flow[3];
+                }
+            }
+        }
+
+        for(var x = 0; x < scrWidth; x++) {
+            grid.push([])
+            for(var y = 0; y < scrHeight; y++) {
+                grid[x].push(new Cell(x, y, 0));
+            }
+        }
+
+        function update() {
+            for(var x = 0; x < grid.length; x++) {
+                for(var y = 0; y < grid[x].length; y++) {
+                    grid[x][y].calculateFlow();
+                }
+            }
+
+            var tot = 0;
+            for(var x = 0; x < grid.length; x++) {
+                for(var y = 0; y < grid[x].length; y++) {
+                    grid[x][y].applyFlow();
+                    
+                }
+            }
+
+            for(var x = 0; x < grid.length; x++) {
+                for(var y = 0; y < grid[x].length; y++) {
+                    tot += grid[x][y].p;
+                    
+                }
+            }
+
+            console.log(tot);
+        }
+
+        function render() {
+            for(var x = 0; x < grid.length; x++) {
+                for(var y = 0; y < grid[x].length; y++) {
+                    var shade = Math.round(grid[x][y].p * 255);
+                    ctx.fillStyle = `rgb(${shade},${shade},${shade})`;
+                    ctx.fillRect(x,y,1,1);
+                }
+            }
+        }
+
+        for(var x = 40; x < 60; x++) {
+            for(var y = 40; y < 60; y++) {
+                grid[x][y].p = Math.random();
+            }
+        }
+
+        for(var x = 70; x < 80; x++) {
+            for(var y = 70; y < 80; y++) {
+                grid[x][y].p = 10
+            }
+        }
+
+        function loop() {
+            update();
+            render();
+        }
+        setInterval(loop, 1000/30);
+    </script>
+</html>

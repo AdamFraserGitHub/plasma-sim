@@ -1,0 +1,54 @@
+<html>
+    <head>
+        <style>
+            html, body {
+                margin: 0px;
+                padding: 0px;
+                overflow: hidden;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="canvas"></canvas>
+    </body>
+
+    <script>
+        var canvas = document.getElementById('canvas');
+        var ctx = canvas.getContext('2d');
+
+        var scrWidth = canvas.width = window.innerWidth;
+        var scrHeight = canvas.height = window.innerHeight;
+
+        ctx.fillRect(0,0,scrWidth, scrHeight);
+
+        var particles = []
+
+        class Particle {
+            constructor() {
+
+            }
+
+            update() {
+
+            }
+
+            render() {
+                
+            }
+        }
+
+        function update() {
+
+        };;
+
+        function render() {
+
+        }
+
+        function loop() {
+            update();
+            render();
+        }
+        setInterval(loop, 1000/30);
+    </script>
+</html>
