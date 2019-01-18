@@ -1,0 +1,146 @@
+<html>
+    <head>
+        <style>
+            html, body{
+                margin: 0px;
+                padding: 0px;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="canvas"></canvas>
+    </body>
+
+    <script>
+        colors = ['rgb(255,255,255)', 'rgb(255,0,0)', 'rgb(0,255,0)', 'rgb(0,150,255)', 'rgb(75,0,255)']
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * scrWidth;
+                this.y = Math.random() * scrHeight;
+
+                this.vX = 0;
+                this.vY = 0;
+
+                if(Math.random() > 0.9) {
+                    this.color = colors[Math.floor(Math.random() * (colors.length - 1)) + 1];
+                } else {
+                    this.color = 'rgb(255,255,255)';
+                }
+            }
+
+            render() {
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x, this.y, 1, 1);
+            }
+
+            update() {
+                // console.log(this.y)
+                if(!flowField[Math.floor(this.x)]) {
+                    console.log(this.x);
+                    console.log(this.y);
+                }
+                var v = flowField[Math.floor(this.x)][Math.floor(this.y)];
+                this.vY = v.y;
+                this.vX = v.x;
+
+                this.x += this.vX;
+                this.y += this.vY;
+
+                if(this.x >= scrWidth) {
+                    this.x = Math.random() * scrWidth;
+                } else if(this.x < 0) {
+                    this.x = Math.random() * scrWidth;
+                }
+
+                if(this.y >= scrHeight) {
+                    this.y = Math.random() * scrHeight;
+                } else if(this.y < 0) {
+                    this.y = Math.random() * scrHeight;
+                }
+            }
+        }
+
+        //vector class that acts in place of messy
+        //reccord declarations and initialisations
+        class Vector {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+            }
+        }
+
+        var canvas = document.getElementById('canvas');
+        var ctx = canvas.getContext('2d');
+
+        var scrWidth = canvas.width = window.innerWidth;
+        var scrHeight = canvas.height = window.innerHeight;
+
+        function render() {
+            ctx.fillStyle = 'rgb(0,0,0)';
+            ctx.fillRect(0,0,scrWidth, scrHeight);
+            for(var i = 0; i < particles.length; i++) {
+                particles[i].render();
+            }
+        }
+
+        function update() {
+            for(var i = 0; i < particles.length; i++) {
+                particles[i].update();
+            }
+        }        
+
+        //we want to create a circular flow field where
+        //each vector is an expression of velocity which leads
+        //to a circular path around the center of the circle
+        //i predict this will have some spiral motion since the
+        //velocity is of set magnitude and ony varies in direction
+        //based on it's position relative to the center of the circle
+
+        //set the central grid position on flow field
+        //this will be used as the refference point for the
+        //center of the circle
+        var center = new Vector(Math.floor(scrWidth / 2), Math.floor(scrHeight / 2));
+
+        //declare the flow feild root array
+        var flowField = []
+
+        //loop over each cell in the flow field whose width is the same
+        //as that of the screen and whose height is simmilarly the same as
+        //that of the screen
+        for(var x = 0; x < scrWidth + 1; x++) {
+            flowField[x] = [];
+            //add one to the axis to cover the edges where particles can still exist
+            for(y = 0; y < scrHeight + 1; y++) {
+                //set the cell value at position x,y to that which gives
+                //a velocity that would be found on a circular path at this point
+                flowField[x][y] = getCircleVector(center, x, y);
+            }
+        }
+
+        //takes the center point of a circle {x,y} and a point on that circle then
+        //returns the vector which is tangent to the circle at that point in it's x,y
+        //componants
+        function getCircleVector(center, x, y) {
+            var angle = Math.atan2(y, x);
+            var x = Math.acos(angle);
+            var y = Math.asin(angle);
+
+            return new Vector(x, y);
+        }
+
+        //generates 1000 random particles to be affected by the flowfield
+        particles = []
+
+        for(var i = 0; i < 10000; i++) {
+            particles.push(new Particle())
+        }
+
+        function loop() {
+            update();
+            render();
+        }
+        setInterval(loop, 1000/25);
+
+    </script>
+</html>
