@@ -114,7 +114,7 @@
             for(y = 0; y < scrHeight + 1; y++) {
                 //set the cell value at position x,y to that which gives
                 //a velocity that would be found on a circular path at this point
-                flowField[x][y] = getCircleVector(center, x, y);
+                // flowField[x][y] = getCircleVector(center, x, y);
             }
         }
 
@@ -122,17 +122,28 @@
         //returns the vector which is tangent to the circle at that point in it's x,y
         //componants
         function getCircleVector(center, x, y) {
-            var angle = Math.atan2(y, x);
-            var x = Math.acos(angle);
-            var y = Math.asin(angle);
+            var angle = Math.atan((y - center.y)/(x - center.x));
+            // console.log(angle);
+            vX = Math.cos(angle);
+            vY = Math.sin(angle);
 
-            return new Vector(x, y);
+            // if(!vX || !vY) {
+                console.log(vX);
+                console.log(vY);
+                console.log(angle);
+                console.log(center);
+                console.log(x);
+                console.log(y);
+                while(true){}
+            // }
+
+            return new Vector(vX, vY);
         }
 
         //generates 1000 random particles to be affected by the flowfield
         particles = []
 
-        for(var i = 0; i < 10000; i++) {
+        for(var i = 0; i < 1000; i++) {
             particles.push(new Particle())
         }
 
@@ -140,7 +151,7 @@
             update();
             render();
         }
-        setInterval(loop, 1000/25);
+        // setInterval(loop, 1000/10);
 
     </script>
 </html>
